@@ -1,4 +1,5 @@
 from datetime import datetime
+from geopy.distance import geodesic
 
 def run_rule_checks(invoice):
     violations = []
@@ -18,14 +19,14 @@ def run_rule_checks(invoice):
     except Exception:
         violations.append("Invalid date format")
 
-    # 3. Route deviation
+    # 3. Route deviation based on contracted distance
     try:
         if invoice["billed_distance"] > invoice["contracted_distance"] * 1.2:
-            violations.append("Route deviation")
+            violations.append("Route deviation (billed > 120% of contracted)")
     except:
         violations.append("Missing distance values")
 
-    # 4. Fuel surcharge anomaly (optional)
+    # 4. Fuel surcharge anomaly
     if invoice.get("fuel_surcharge", 0) > 150:
         violations.append("Unusually high fuel surcharge")
 
@@ -33,5 +34,16 @@ def run_rule_checks(invoice):
     valid_regions = {"north", "south", "east", "west"}
     if invoice.get("region", "").lower() not in valid_regions:
         violations.append("Invalid region")
+
+    # 6. Lat/Lon-based actual route deviation check
+    try:
+        start = (float(invoice["pickup_lat"]), float(invoice["pickup_lon"]))
+        end = (float(invoice["drop_lat"]), float(invoice["drop_lon"]))
+        actual_distance = geodesic(start, end).km
+
+        if invoice["billed_distance"] > actual_distance * 1.5:
+            violations.append("Billed distance exceeds 150% of actual geodesic distance")
+    except Exception as e:
+        violations.append("Invalid or missing lat/lon coordinates for geodesic check")
 
     return violations

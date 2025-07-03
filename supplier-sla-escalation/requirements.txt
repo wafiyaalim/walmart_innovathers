@@ -1,0 +1,7 @@
+flask
+flask_sqlalchemy
+flask-cors
+schedule
+slack_sdk
+sendgrid
+python-dotenv

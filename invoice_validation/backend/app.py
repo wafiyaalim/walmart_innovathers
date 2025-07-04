@@ -138,6 +138,26 @@ def upload_pdf():
 
     except Exception as e:
         return jsonify({'error': f"PDF parsing failed: {str(e)}"}), 500
+    
+@app.route("/logs", methods=["GET"])
+def get_logs():
+    try:
+        logs = InvoiceLog.query.order_by(InvoiceLog.created_at.desc()).all()
+        log_list = []
+        for log in logs:
+            log_list.append({
+                "id": log.id,
+                "invoice_id": log.invoice_id,
+                "status": log.status,
+                "anomaly_score": log.anomaly_score,
+                "anomaly_flag": log.anomaly_flag,
+                "explanation": log.explanation,
+                "rule_violations": log.rule_violations,
+                "created_at": log.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            })
+        return jsonify(log_list)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

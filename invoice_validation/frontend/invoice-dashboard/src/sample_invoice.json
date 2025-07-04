@@ -1,0 +1,11 @@
+{
+  "invoice_id": "INV9999",
+  "billed_amount": 1400,
+  "contracted_amount": 1300,
+  "fuel_surcharge": 100,
+  "billed_distance": 550,
+  "contracted_distance": 500,
+  "region": "north",
+  "invoice_date": "2025-06-25",
+  "delivery_date": "2025-05-15"
+}

@@ -1,0 +1,3 @@
+[submodule "frontend/invoice-dashboard"]
+	path = frontend/invoice-dashboard
+	url = git@github.com:wafiyaalim/walmart_innovathers.git

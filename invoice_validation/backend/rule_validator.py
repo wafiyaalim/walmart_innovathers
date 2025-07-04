@@ -21,8 +21,8 @@ def run_rule_checks(invoice):
 
     # 3. Route deviation based on contracted distance
     try:
-        if invoice["billed_distance"] > invoice["contracted_distance"] * 1.2:
-            violations.append("Route deviation (billed > 120% of contracted)")
+        if invoice["billed_distance"] > invoice["contracted_distance"] * 1.5:
+            violations.append("Route deviation (billed > 150% of contracted)")
     except:
         violations.append("Missing distance values")
 
@@ -37,8 +37,8 @@ def run_rule_checks(invoice):
 
     # 6. Lat/Lon-based actual route deviation check
     try:
-        start = (float(invoice["pickup_lat"]), float(invoice["pickup_lon"]))
-        end = (float(invoice["drop_lat"]), float(invoice["drop_lon"]))
+        start = (float(invoice["origin_lat"]), float(invoice["origin_lon"]))
+        end = (float(invoice["destination_lat"]), float(invoice["destination_lon"]))
         actual_distance = geodesic(start, end).km
 
         if invoice["billed_distance"] > actual_distance * 1.5:

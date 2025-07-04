@@ -1,6 +1,7 @@
 import os
 import joblib
 import numpy as np
+import pandas as pd  # ✅ Needed for DataFrame
 
 # Load trained ML model and region encoder
 model_path = os.path.join("model", "isolation_forest_model.pkl")
@@ -20,12 +21,20 @@ def run_ml_checks(invoice):
     heuristic_result = run_heuristic_rules(invoice)
 
     # Combine results
-    combined_flag = ml_result["anomaly_flag"] or heuristic_result["anomaly_flag"]
+    combined_flag = bool(ml_result["anomaly_flag"] or heuristic_result["anomaly_flag"])
 
     return {
         "combined_flag": combined_flag,
-        "ml": ml_result,
-        "heuristic": heuristic_result
+        "ml": {
+            "anomaly_flag": bool(ml_result["anomaly_flag"]),
+            "anomaly_score": float(ml_result["anomaly_score"]),
+            "explanation": str(ml_result["explanation"])
+        },
+        "heuristic": {
+            "anomaly_flag": bool(heuristic_result["anomaly_flag"]),
+            "anomaly_score": float(heuristic_result["anomaly_score"]),
+            "explanation": str(heuristic_result["explanation"])
+        }
     }
 
 # 1️⃣ ML-based detection
@@ -44,13 +53,13 @@ def run_ml_model(invoice):
         else:
             region_encoded = region_encoder.transform([region])[0]
 
-        features = np.array([[  
-            invoice.get("billed_distance", 0),
-            invoice.get("billed_amount", 0),
-            invoice.get("fuel_surcharge", 0),
-            region_encoded
-        ]])
-
+        # ✅ Use DataFrame with column names to prevent warning
+        features = pd.DataFrame([{
+            "distance": invoice.get("billed_distance", 0),
+            "freight_cost": invoice.get("billed_amount", 0),
+            "fuel": invoice.get("fuel_surcharge", 0),
+            "region_encoded": region_encoded
+        }])
         score = model.decision_function(features)[0]
         anomaly = model.predict(features)[0] == -1
         explanation = "Anomalous pattern" if anomaly else "Normal pattern"
